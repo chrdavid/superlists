@@ -1,5 +1,6 @@
 import logging
 import time
+from unittest import skip
 
 from django.test import LiveServerTestCase
 from selenium import webdriver
@@ -36,6 +37,7 @@ class NewVisitorTest(LiveServerTestCase):
                     raise e
                 time.sleep(0.5)
 
+    @skip("just playing w/ UI tests...")
     def test_can_start_a_list_for_one_user(self):
         # Edith has heard about a cool new online to-do app. She goes
         # to check out its homepage
@@ -76,6 +78,7 @@ class NewVisitorTest(LiveServerTestCase):
 
         # Satisfied, she goes back to sleep
 
+    @skip("Skip long running test for now...")
     def test_multiple_users_can_start_lists_at_different_urls(self):
         # Edith start a new todo list
         self.browser.get(self.live_server_url)
@@ -120,3 +123,28 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertIn('Buy milk', page_text)
 
         # Satisfied, they both go back to sleep
+
+    def test_layout_and_styling(self):
+        # Edith goes to the home page
+        self.browser.get(self.live_server_url)
+        self.browser.set_window_size(1024, 768)
+
+        # She notices the input box is nicely centered
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        self.assertAlmostEqual(
+            inputbox.location['x'] + inputbox.size['width'] / 2,
+            512,
+            delta=10
+        )
+
+        # She starts a new list and sees the input is nicely
+        # centered there too
+        inputbox.send_keys('testing')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: testing')
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        self.assertAlmostEqual(
+            inputbox.location['x'] + inputbox.size['width'] / 2,
+            512,
+            delta=10
+        )
