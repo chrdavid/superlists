@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .models import Item
+from .models import Item, List
 
 
 class HomePageTest(TestCase):
@@ -13,19 +13,24 @@ class HomePageTest(TestCase):
         self.assertEqual(Item.objects.count(), 0)
 
 
-class ItemModelTest(TestCase):
+class ListAndItemsModelTest(TestCase):
     def test_item_ordering(self):
         item = Item()
         self.assertEqual(item._meta.ordering, ('-text',), 'Should sort items in descending order of text values.')
 
     def test_saving_and_retrieving_items(self):
+        list_ = List()
+        list_.save()
+
         first_item = Item()
         first_item.text = 'The first (ever) list item'
+        first_item.list = list_
         first_item.author = 'MM'
         first_item.save()
 
         second_item = Item()
         second_item.text = 'Item the second'
+        second_item.list = list_
         second_item.author = 'FB'
         second_item.save()
 
@@ -40,11 +45,15 @@ class ItemModelTest(TestCase):
         self.assertEqual(first_saved_item.author, 'MM')
         self.assertEqual(second_saved_item.author, 'FB')
 
+        self.assertEqual(first_saved_item.list, list_)
+        self.assertEqual(second_saved_item.list, list_)
+
 
 class ListViewTest(TestCase):
     def test_displays_all_items(self):
-        Item.objects.create(text='itemey 1')
-        Item.objects.create(text='itemey 2')
+        list_ = List.objects.create()
+        Item.objects.create(text='itemey 1', list=list_)
+        Item.objects.create(text='itemey 2', list=list_)
 
         response = self.client.get('/lists/the-only-list-in-the-world/')
 
@@ -66,3 +75,7 @@ class NewListTest(TestCase):
     def test_redirects_after_POST(self):
         response = self.client.post('/lists/new', data={'item_text': 'A new list item'})
         self.assertRedirects(response, '/lists/the-only-list-in-the-world/')
+
+    def test_redirects_on_GET(self):
+        response = self.client.get('/lists/new')
+        self.assertRedirects(response, '/')
