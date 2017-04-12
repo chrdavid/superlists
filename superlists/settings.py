@@ -122,5 +122,6 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
     '--cover-html',
-    '--cover-package=lists,superlists',
+    '--cover-package=lists,superlists,functional_tests',
+    '--verbosity=1'
 ]
