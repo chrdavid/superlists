@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .models import Item, List
+from ..models import Item, List
 
 
 class HomePageTest(TestCase):
@@ -16,7 +16,11 @@ class HomePageTest(TestCase):
 class ListAndItemsModelTest(TestCase):
     def test_item_ordering(self):
         item = Item()
-        self.assertEqual(item._meta.ordering, ('-text',), 'Should sort items in descending order of text values.')
+        self.assertEqual(
+            item._meta.ordering,
+            ('-text',),
+            'Should sort items in descending order of text values.'
+        )
 
     def test_saving_and_retrieving_items(self):
         list_ = List()
@@ -85,7 +89,10 @@ class NewListTest(TestCase):
         self.assertEqual(new_item.text, 'A new list item')
 
     def test_redirects_after_POST(self):
-        response = self.client.post('/lists/new', data={'item_text': 'A new list item'})
+        response = self.client.post(
+            '/lists/new',
+            data={'item_text': 'A new list item'}
+        )
         new_list = List.objects.first()
         self.assertRedirects(response, '/lists/%d/' % new_list.id)
 
