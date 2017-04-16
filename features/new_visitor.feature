@@ -1,4 +1,4 @@
-@todo
+@e2e
 Feature: TODO list
   In order to manage our daily work
   As an employee

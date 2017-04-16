@@ -6,7 +6,7 @@ from behave import given, when, then
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 
-from features.steps.utils import wait_for_row_in_list_table
+from features.utils import wait_for_row_in_list_table
 
 
 @given('Edith has opened her browser')
