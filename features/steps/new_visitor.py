@@ -1,15 +1,15 @@
 """
 ported from /functional_tests/tests.py
 """
-import time
 
 from behave import given, when, then
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 
+from features.steps.utils import wait_for_row_in_list_table
 
-@given('Edith opens her browser')
+
+@given('Edith has opened her browser')
 def step(context):
     context.browser = Firefox()
 
@@ -17,11 +17,11 @@ def step(context):
 @when('Edith goes to the home page')
 def step(context):
     context.browser.get(context.test.live_server_url)
-    context.browser.set_window_size(1024, 768)
 
 
 @then('She notices the input box nicely centered')
 def step(context):
+    context.browser.set_window_size(1024, 768)
     inputbox = context.browser.find_element_by_id('id_new_item')
     context.test.assertAlmostEqual(
         inputbox.location['x'] + inputbox.size['width'] / 2,
@@ -45,18 +45,34 @@ def step(context):
     )
 
 
-MAX_WAIT = 10
+@then('She notices the page title and header mention to-do lists')
+def step_impl(context):
+    context.test.assertIn('To-Do', context.browser.title)
+    header = context.browser.find_element_by_tag_name("h1").text
+    context.test.assertIn('To-Do', header)
 
 
-def wait_for_row_in_list_table(context, row_text):
-    start_time = time.time()
-    while True:
-        try:
-            table = context.browser.find_element_by_id('id_list_table')
-            rows = table.find_elements_by_tag_name('tr')
-            context.test.assertIn(row_text, [row.text for row in rows])
-            return
-        except (AssertionError, WebDriverException) as e:
-            if time.time() - start_time > MAX_WAIT:
-                raise e
-            time.sleep(0.5)
+@then('She is invited to enter a to-do item straight away')
+def step_impl(context):
+    inputbox = context.browser.find_element_by_id('id_new_item')
+    context.test.assertEqual(
+        inputbox.get_attribute('placeholder'),
+        'Enter a to-do item'
+    )
+
+
+@then('She types "{text}" into the text box and hit\'s enter')
+def step_impl(context, text):
+    inputbox = context.browser.find_element_by_id('id_new_item')
+    inputbox.send_keys(text)
+    inputbox.send_keys(Keys.ENTER)
+
+
+@then('The page now lists "{idx}: {text}" as an item')
+def step_ipl(context, idx, text):
+    wait_for_row_in_list_table(context, '%d: %s' % (int(idx), text))
+
+
+@then(u'There is still a text box inviting her to add another item.')
+def step_impl(context):
+    context.browser.find_element_by_id('id_new_item')
