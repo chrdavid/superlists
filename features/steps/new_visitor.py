@@ -9,18 +9,26 @@ from selenium.webdriver.common.keys import Keys
 from features.utils import wait_for_row_in_list_table
 
 
-@given('Edith has opened her browser')
-def step(context):
+@given('{name} has opened a browser')
+def step_impl(context, name):
+    context.name = name
+    if hasattr(context, 'browser'):
+        context.browser.close()
+        context.browser.quit()
+
     context.browser = Firefox()
+
+    # there is a known bug in selenium, runnign phantomjs as grantchild process, for now let's stick with Firefox...
+    # context.browser = PhantomJS()
 
 
 @when('Edith goes to the home page')
-def step(context):
+def step_impl(context):
     context.browser.get(context.test.live_server_url)
 
 
 @then('She notices the input box nicely centered')
-def step(context):
+def step_impl(context):
     context.browser.set_window_size(1024, 768)
     inputbox = context.browser.find_element_by_id('id_new_item')
     context.test.assertAlmostEqual(
@@ -31,8 +39,7 @@ def step(context):
 
 
 @then('She starts a new list and sees the input is nicely centered there, too')
-def step(context):
-    # She starts a new list and sees the input is nicely centered there too
+def step_impl(context):
     inputbox = context.browser.find_element_by_id('id_new_item')
     inputbox.send_keys('testing')
     inputbox.send_keys(Keys.ENTER)
@@ -68,9 +75,9 @@ def step_impl(context, text):
     inputbox.send_keys(Keys.ENTER)
 
 
-@then('The page now lists "{idx}: {text}" as an item')
-def step_ipl(context, idx, text):
-    wait_for_row_in_list_table(context, '%d: %s' % (int(idx), text))
+@then('The page now lists "{idx:d}: {text}" as an item')
+def step_impl(context, idx, text):
+    wait_for_row_in_list_table(context, '%d: %s' % (idx, text))
 
 
 @then(u'There is still a text box inviting her to add another item.')
